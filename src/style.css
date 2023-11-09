@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+  text-rendering: optimizeLegibility;
+  font-kerning: auto;
+}
+
+html {
+  font-family: sans-serif;
+}
+
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+}
