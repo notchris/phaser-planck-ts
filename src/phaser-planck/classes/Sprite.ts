@@ -22,12 +22,13 @@ interface PhaserPlanckSpriteOptions {
 export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
   debug: boolean;
   fixture?: Fixture;
-  planckBody?: Body;
+  declare planckBody: Body;
   bodyType?: "box" | "circle" | "polygon" | "edge";
   graphics: Phaser.GameObjects.Graphics;
   fixtureOptions?: PhaserPlanckSpriteOptions;
   conveyer = false;
   conveyerSpeed = 0;
+  conveyerReverse = false;
   sensor = false;
   vertices: Vec2[] = [];
   points: { x: number; y: number }[] = [];
@@ -52,11 +53,55 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
     return this;
   }
 
+  isAwake() {
+    return this.planckBody.isAwake();
+  }
+
+  applyForce(
+    force: { x: number; y: number },
+    point: { x: number; y: number },
+    wake?: boolean
+  ) {
+    this.planckBody.applyForce(
+      Vec2(force.x, force.y),
+      Vec2(point.x, point.y),
+      wake
+    );
+  }
+
+  applyForceToCenter(force: { x: number; y: number }, wake?: boolean) {
+    this.planckBody.applyForceToCenter(Vec2(force.x, force.y), wake);
+  }
+
+  applyLinearImpulse(
+    impulse: { x: number; y: number },
+    point: { x: number; y: number },
+    wake?: boolean
+  ) {
+    this.planckBody.applyLinearImpulse(
+      Vec2(impulse.x, impulse.y),
+      Vec2(point.x, point.y),
+      wake
+    );
+  }
+
+  applyAngularImpulse(
+    impulse: { x: number; y: number },
+    point: { x: number; y: number },
+    wake?: boolean
+  ) {
+    this.planckBody.applyLinearImpulse(
+      Vec2(impulse.x, impulse.y),
+      Vec2(point.x, point.y),
+      wake
+    );
+  }
+
+  applyTorque(torque: number, wake?: boolean) {
+    this.planckBody.applyTorque(torque, wake);
+  }
+
   setMassData(options: PhaserPlanckSpriteOptions) {
-    if (!this.planckBody) {
-      console.error("No planck body on Sprite.");
-      return;
-    }
     this.planckBody.setMassData({
       mass: options.mass || 1,
       center: options.massCenter || Vec2(),
@@ -172,9 +217,10 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
     this.planckBody.setStatic();
   }
 
-  setConveyer(bool: boolean, speed: number) {
-    this.conveyer = bool;
+  setConveyer(enabled: boolean, speed: number, reverse?: boolean) {
+    this.conveyer = enabled;
     this.conveyerSpeed = speed || 0;
+    this.conveyerReverse = reverse || false;
   }
 
   setBodyPosition(x: number, y: number) {
@@ -274,10 +320,14 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
       let fixtureA = contact.getFixtureA();
       let fixtureB = contact.getFixtureB();
       if (fixtureA === this.fixture) {
-        contact.setTangentSpeed(-this.conveyerSpeed);
+        contact.setTangentSpeed(
+          this.conveyerReverse ? this.conveyerSpeed : -this.conveyerSpeed
+        );
       }
       if (fixtureB === this.fixture) {
-        contact.setTangentSpeed(this.conveyerSpeed);
+        contact.setTangentSpeed(
+          this.conveyerReverse ? -this.conveyerSpeed : this.conveyerSpeed
+        );
       }
     }
   }

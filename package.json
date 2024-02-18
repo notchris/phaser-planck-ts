@@ -13,6 +13,7 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
+    "lil-gui": "^0.19.1",
     "phaser": "^3.60.0",
     "planck": "^1.0.0-beta.16"
   }

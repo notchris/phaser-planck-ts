@@ -152,7 +152,7 @@ export class PhaserPlanck extends Phaser.Plugins.ScenePlugin {
     this.scene = null;
     this.sprites = [];
     this.elapsedTime = 0;
-    this.errored = false;
+    this.errored = false
   }
 
   register(plugins: Phaser.Plugins.PluginManager) {

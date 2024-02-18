@@ -1,13 +1,16 @@
 import Phaser from "phaser";
+import { createGround } from "./util";
 
-export default class MainScene extends Phaser.Scene {
+export default class DemoShapes extends Phaser.Scene {
   planckConfig = {
     scaleFactor: 30,
     gravity: { x: 0, y: 9 },
     debug: false,
+    speed: 1,
+    hz: 60,
   };
   constructor() {
-    super({ key: "MainScene" });
+    super({ key: "DemoShapes" });
   }
 
   preload() {}
@@ -15,20 +18,6 @@ export default class MainScene extends Phaser.Scene {
   init() {}
 
   create() {
-    console.log(this.planck);
-
-    // Ground Texture
-    const groundTexture = this.add.graphics();
-    groundTexture.fillStyle(0x666666);
-    groundTexture.fillRect(0, 0, 640, 40);
-    groundTexture.generateTexture("demo_basic_ground", 640, 40);
-    groundTexture.destroy();
-
-    // Ground Sprite
-    const groundSprite = this.planck.add.sprite(0, 400, "demo_basic_ground");
-    groundSprite.setBox();
-    groundSprite.setStatic();
-
     // Box Texture
     const boxTexture = this.add.graphics();
     boxTexture.fillStyle(0xffff00);
@@ -52,22 +41,34 @@ export default class MainScene extends Phaser.Scene {
       { x: 64, y: 0 },
     ];
     polyTexture.fillPoints(polypoints, true, true);
-    polyTexture.generateTexture("poly", 64, 64);
+    // Extra pixel to fix extrusion?
+    polyTexture.generateTexture("poly", 65, 65);
     polyTexture.destroy();
 
     // Polygon
-    const box = this.planck.add.sprite(100, 300, "box");
+    const box = this.planck.add.sprite(100, 360, "box");
     box.setBox();
     box.setStatic();
 
     // Polygon
-    const poly = this.planck.add.sprite(300, 200, "poly");
+    const poly = this.planck.add.sprite(300, 328, "poly");
     poly.setPolygon([
       { x: 0, y: 64 },
       { x: 64, y: 64 },
       { x: 64, y: 0 },
     ]);
     poly.setStatic();
+
+    // Polygon
+    const polyB = this.planck.add.sprite(400, 100, "poly");
+    polyB.setPolygon([
+      { x: 0, y: 64 },
+      { x: 64, y: 64 },
+      { x: 64, y: 0 },
+    ]);
+
+    polyB.setDynamic();
+    polyB.setBodyRotation(20);
 
     // Ball Drop Timer
     this.time.addEvent({
@@ -94,5 +95,11 @@ export default class MainScene extends Phaser.Scene {
       callbackScope: this,
       repeat: 10,
     });
+
+    createGround(this);
+  }
+
+  shutdown() {
+    console.log("shutdown what");
   }
 }
