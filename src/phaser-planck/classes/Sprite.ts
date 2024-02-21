@@ -8,9 +8,11 @@ import {
   Edge,
   Polygon,
   Contact,
+  Chain,
+  ChainShape,
 } from "planck";
 
-interface PhaserPlanckSpriteOptions {
+export interface PhaserPlanckSpriteOptions {
   friction?: number;
   restitution?: number;
   density?: number;
@@ -23,7 +25,7 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
   debug: boolean;
   fixture?: Fixture;
   declare planckBody: Body;
-  bodyType?: "box" | "circle" | "polygon" | "edge";
+  bodyType?: "box" | "circle" | "polygon" | "edge" | "chain";
   graphics: Phaser.GameObjects.Graphics;
   fixtureOptions?: PhaserPlanckSpriteOptions;
   conveyer = false;
@@ -32,6 +34,7 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
   sensor = false;
   vertices: Vec2[] = [];
   points: { x: number; y: number }[] = [];
+  chainShape?: ChainShape;
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string) {
     super(scene, x, y, texture);
@@ -115,6 +118,45 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
       restitution: options.restitution || 0.0,
       density: options.density || 1.0,
     };
+  }
+
+  setChain(
+    points: { x: number; y: number }[],
+    options: PhaserPlanckSpriteOptions
+  ) {
+    this.bodyType = "chain";
+
+    this.planckBody = this.scene.planck.world.createBody();
+
+    this.setMassData(options || {});
+    const fixtureOptions = this.setFixtureData(options || {});
+
+    points.forEach((p) => {
+      this.vertices.push(
+        Vec2(
+          (p.x - this.displayWidth / 2) / this.scene.planck.config.scaleFactor,
+          (p.y - this.displayHeight / 2) / this.scene.planck.config.scaleFactor
+        )
+      );
+      this.points.push({
+        x: p.x - this.displayWidth / 2,
+        y: p.y - this.displayHeight / 2,
+      });
+    });
+
+    // TODO: Close edge?
+    this.chainShape = Chain(this.vertices);
+
+    this.fixture = this.planckBody.createFixture(
+      this.chainShape,
+      fixtureOptions
+    );
+    this.planckBody.setPosition(
+      Vec2(
+        (this.x + this.displayWidth / 2) / this.scene.planck.config.scaleFactor,
+        (this.y - this.displayHeight / 2) / this.scene.planck.config.scaleFactor
+      )
+    );
   }
 
   setBox(options?: PhaserPlanckSpriteOptions) {
@@ -235,28 +277,31 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
   }
 
   getBodyPosition() {
-    if (!this.planckBody) return;
     return new Phaser.Math.Vector2(this.x, this.y);
   }
 
+  getBodyWorldCenter() {
+    return this.planckBody.getWorldCenter();
+  }
+
   setBodyRotation(angle: number) {
-    if (!this.planckBody) return;
     this.planckBody.setTransform(this.planckBody.getPosition(), angle);
   }
 
   getBodyRotation() {
-    if (!this.planckBody) return;
     return this.planckBody.getAngle();
   }
 
   setStatic() {
-    if (!this.planckBody) return;
     this.planckBody.setStatic();
   }
 
   setDynamic() {
-    if (!this.planckBody) return;
     this.planckBody.setDynamic();
+  }
+
+  setKinematic() {
+    this.planckBody.setKinematic();
   }
 
   setSensor() {
@@ -273,43 +318,49 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
    * Custom debug draw
    * Note: This should really be replaced with a shader or something.
    */
-  // drawDebug() {
+  drawDebug() {
+    this.graphics.clear();
+    this.graphics.lineStyle(2, 0x0000ff, 1);
+    switch (this.bodyType) {
+      case "box":
+        this.graphics.translateCanvas(this.x, this.y);
+        this.graphics.rotateCanvas(this.rotation);
+        this.graphics.strokeRect(
+          -this.displayWidth / 2,
+          -this.displayHeight / 2,
+          this.displayWidth,
+          this.displayHeight
+        );
+        break;
+      case "circle":
+        this.graphics.translateCanvas(this.x, this.y);
+        this.graphics.rotateCanvas(this.rotation);
+        this.graphics.strokeCircle(0, 0, this.displayWidth / 2);
+        break;
+      case "polygon":
+        this.graphics.translateCanvas(this.x, this.y);
+        this.graphics.rotateCanvas(this.rotation);
+        this.graphics.strokePoints(this.points, true, true);
+        break;
+      case "chain":
+        if (!this.chainShape) return;
+        this.graphics.translateCanvas(this.x, this.y);
 
-  //   this.graphics.clear();
-  //   this.graphics.lineStyle(2, 0x0000ff, 1);
-  //   switch (this.bodyType) {
-  //     case "box":
-  //       this.graphics.translateCanvas(this.x, this.y);
-  //       this.graphics.rotateCanvas(this.rotation);
-  //       this.graphics.strokeRect(
-  //         -this.displayWidth / 2,
-  //         -this.displayHeight / 2,
-  //         this.displayWidth,
-  //         this.displayHeight
-  //       );
-  //       break;
-  //     case "circle":
-  //       this.graphics.translateCanvas(this.x, this.y);
-  //       this.graphics.rotateCanvas(this.rotation);
-  //       this.graphics.strokeCircle(0, 0, this.displayWidth / 2);
-  //       break;
-  //     case "polygon":
-  //       this.graphics.translateCanvas(this.x, this.y);
-  //       this.graphics.rotateCanvas(this.rotation);
-  //       this.graphics.strokePoints(this.points, true, true);
-  //       break;
-  //     case "edge":
-  //       this.graphics.strokeLineShape({
-  //         x1: this.opts.x1,
-  //         y1: this.opts.y1,
-  //         x2: this.opts.x2,
-  //         y2: this.opts.y2,
-  //       });
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // }
+        this.graphics.strokePoints(this.points, false);
+
+        break;
+      // case "edge":
+      //   this.graphics.strokeLineShape({
+      //     x1: this.opts.x1,
+      //     y1: this.opts.y1,
+      //     x2: this.opts.x2,
+      //     y2: this.opts.y2,
+      //   });
+      //   break;
+      default:
+        break;
+    }
+  }
 
   /**
    * PreSolve Planck World
@@ -363,9 +414,9 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
       this.x = pos.x * this.scene.planck.config.scaleFactor;
       this.y = pos.y * this.scene.planck.config.scaleFactor;
       this.rotation = pb.getAngle();
-      // if (this.debug) {
-      //   this.drawDebug();
-      // }
+      if (this.debug) {
+        this.drawDebug();
+      }
     }
   }
 }

@@ -7,6 +7,11 @@ import DemoEvents from "./scene/DemoEvents";
 import { createGui } from "./scene/util";
 import DemoConveyer from "./scene/DemoConveyer";
 import DemoForce from "./scene/DemoForce";
+import DemoFriction from "./scene/DemoFriction";
+import DemoSandbox from "./scene/DemoSandbox";
+import DemoChain from "./scene/DemoChain";
+import DemoDistanceJoint from "./scene/DemoDistanceJoint";
+import DemoRevoluteJoint from "./scene/DemoRevoluteJoint";
 
 // Create reference to 'game' to be set onload
 let game: Phaser.Game | undefined;
@@ -26,7 +31,18 @@ const config = {
   audio: {
     noAudio: true,
   },
-  scene: [DemoShapes, DemoEdges, DemoEvents, DemoConveyer, DemoForce],
+  scene: [
+    DemoSandbox,
+    DemoShapes,
+    DemoEdges,
+    DemoEvents,
+    DemoConveyer,
+    DemoForce,
+    DemoFriction,
+    DemoChain,
+    DemoDistanceJoint,
+    DemoRevoluteJoint,
+  ],
   plugins: {
     scene: [{ key: "PhaserPlanck", plugin: PhaserPlanck, mapping: "planck" }],
   },

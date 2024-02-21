@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { createGround } from "./util";
 
 export default class DemoForce extends Phaser.Scene {
   planckConfig = {
@@ -17,17 +18,7 @@ export default class DemoForce extends Phaser.Scene {
   init() {}
 
   create() {
-    // Ground Texture
-    const groundTexture = this.add.graphics();
-    groundTexture.fillStyle(0xff0000);
-    groundTexture.fillRect(0, 0, 1024, 1);
-    groundTexture.generateTexture("demo_events_ground", 1024, 1);
-    groundTexture.destroy();
-
-    // Ground Sprite
-    const groundSprite = this.planck.add.sprite(0, 512, "demo_events_ground");
-    groundSprite.setBox();
-    groundSprite.setStatic();
+    createGround(this);
 
     // Ball Texture
     const ballTexture = this.add.graphics();

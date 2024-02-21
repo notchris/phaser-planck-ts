@@ -1,7 +1,17 @@
 import Phaser from "phaser";
 import Sprite from "./classes/Sprite";
-import { World, Vec2 } from "planck";
+import {
+  World,
+  Vec2,
+  DistanceJoint,
+  DistanceJointDef,
+  RevoluteJoint,
+  RevoluteJointDef,
+  WheelJointDef,
+  WheelJoint,
+} from "planck";
 import PhaserPlanckSprite from "./classes/Sprite";
+import PhaserPlanckJoint from "./classes/JointSprite";
 
 export interface PhaserPlanckConfig {
   scaleFactor: number;
@@ -15,9 +25,30 @@ export class PhaserPlanck extends Phaser.Plugins.ScenePlugin {
   world: World;
   add: {
     sprite: (x: number, y: number, texture: string) => PhaserPlanckSprite;
+    distanceJoint: (
+      bodyA: PhaserPlanckSprite,
+      bodyB: PhaserPlanckSprite,
+      worldAnchorOnBodyA: { x: number; y: number } | Phaser.Math.Vector2,
+      worldAnchorOnBodyB: { x: number; y: number } | Phaser.Math.Vector2,
+      config: Partial<DistanceJointDef>
+    ) => PhaserPlanckJoint;
+    revoluteJoint: (
+      bodyA: PhaserPlanckSprite,
+      bodyB: PhaserPlanckSprite,
+      anchor: { x: number; y: number } | Phaser.Math.Vector2,
+      config: Partial<RevoluteJointDef>
+    ) => PhaserPlanckJoint;
+    wheelJoint: (
+      bodyA: PhaserPlanckSprite,
+      bodyB: PhaserPlanckSprite,
+      anchor: { x: number; y: number } | Phaser.Math.Vector2,
+      axis: { x: number; y: number } | Phaser.Math.Vector2,
+      config: Partial<WheelJointDef>
+    ) => PhaserPlanckJoint;
   };
   scene: Phaser.Scene;
-  sprites: PhaserPlanckSprite[];
+  sprites: PhaserPlanckSprite[] = [];
+  joints: PhaserPlanckJoint[] = [];
   config: PhaserPlanckConfig;
 
   timeStep: number;
@@ -56,6 +87,7 @@ export class PhaserPlanck extends Phaser.Plugins.ScenePlugin {
     this.scene = scene;
     this.world = new World(Vec2(this.config.gravity.x, this.config.gravity.y));
     this.sprites = [];
+    this.joints = [];
 
     scene.planck = this;
 
@@ -69,6 +101,50 @@ export class PhaserPlanck extends Phaser.Plugins.ScenePlugin {
         const s = new Sprite(this.scene, x, y, texture);
         this.sprites.push(s);
         return s;
+      },
+      distanceJoint: (
+        bodyA,
+        bodyB,
+        worldAnchorOnBodyA,
+        worldAnchorOnBodyB,
+        config
+      ) => {
+        const joint = new DistanceJoint(
+          config,
+          bodyA.planckBody,
+          bodyB.planckBody,
+          worldAnchorOnBodyA,
+          worldAnchorOnBodyB
+        );
+        this.world.createJoint(joint);
+        const sprite = new PhaserPlanckJoint(this.scene, joint);
+
+        return sprite;
+      },
+      revoluteJoint: (bodyA, bodyB, anchor, config) => {
+        const joint = new RevoluteJoint(
+          config,
+          bodyA.planckBody,
+          bodyB.planckBody,
+          anchor
+        );
+        this.world.createJoint(joint);
+        const sprite = new PhaserPlanckJoint(this.scene, joint);
+
+        return sprite;
+      },
+      wheelJoint: (bodyA, bodyB, anchor, axis, config) => {
+        const joint = new WheelJoint(
+          config,
+          bodyA.planckBody,
+          bodyB.planckBody,
+          anchor,
+          axis
+        );
+        this.world.createJoint(joint);
+        const sprite = new PhaserPlanckJoint(this.scene, joint);
+
+        return sprite;
       },
     };
 
@@ -152,7 +228,7 @@ export class PhaserPlanck extends Phaser.Plugins.ScenePlugin {
     this.scene = null;
     this.sprites = [];
     this.elapsedTime = 0;
-    this.errored = false
+    this.errored = false;
   }
 
   register(plugins: Phaser.Plugins.PluginManager) {

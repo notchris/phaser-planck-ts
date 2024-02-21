@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { createGround } from "./util";
+import { createRamps } from "./util";
 
 export default class DemoEdges extends Phaser.Scene {
   planckConfig = {
@@ -53,6 +53,6 @@ export default class DemoEdges extends Phaser.Scene {
       repeat: 10,
     });
 
-    createGround(this);
+    createRamps(this);
   }
 }

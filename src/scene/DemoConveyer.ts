@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { createGround } from "./util";
 
 export default class DemoConveyer extends Phaser.Scene {
   planckConfig = {
@@ -17,26 +18,16 @@ export default class DemoConveyer extends Phaser.Scene {
   init() {}
 
   create() {
-    // Ground Texture
-    const groundTexture = this.add.graphics();
-    groundTexture.fillStyle(0xff0000);
-    groundTexture.fillRect(0, 0, 1024, 1);
-    groundTexture.generateTexture("demo_events_ground", 1024, 1);
-    groundTexture.destroy();
+    createGround(this);
 
-    // Ground Sprite
-    const groundSprite = this.planck.add.sprite(0, 512, "demo_events_ground");
-    groundSprite.setBox();
-    groundSprite.setStatic();
-
-    // Ground Texture
+    // Conveyer Texture
     const conveyerTexture = this.add.graphics();
     conveyerTexture.fillStyle(0xff0000);
     conveyerTexture.fillRect(0, 0, 512, 10);
     conveyerTexture.generateTexture("demo_events_conveyer", 512, 10);
     conveyerTexture.destroy();
 
-    // Ground Sprite
+    // Conveyer Sprite
     const conveyerSprite = this.planck.add.sprite(
       200,
       300,
