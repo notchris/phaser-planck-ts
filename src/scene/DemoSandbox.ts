@@ -54,13 +54,30 @@ export default class DemoSandbox extends Phaser.Scene {
     circleTexture.generateTexture("demo_sandbox_circle", 60, 60);
     circleTexture.destroy();
 
+    // Ramp Texture
+    const rampTexture = this.add.graphics();
+    rampTexture.fillStyle(0xffff00);
+    rampTexture.fillRect(0, 0, 400, 10);
+    rampTexture.generateTexture("demo_sandbox_ramp", 400, 10);
+    rampTexture.destroy();
+
+    const ramp = this.planck.add.sprite(
+      width / 2 - 100,
+      height / 2 + 260,
+      "demo_sandbox_ramp"
+    );
+    ramp.setBox();
+    ramp.setBodyRotation(-Math.PI / 16);
+
     // Car
     const car = this.planck.add.sprite(
       width / 2 - 100,
       height / 2 - 15,
       "demo_sandbox_box"
     );
-    car.setBox();
+    car.setBox({
+      density: 0.4,
+    });
     car.setDynamic();
     car.setTintFill(0xff0000);
 
@@ -71,7 +88,7 @@ export default class DemoSandbox extends Phaser.Scene {
       "demo_sandbox_circle"
     );
     wheelBack.setCircle({
-      density: 1.0,
+      density: 0.2,
       friction: 0.9,
     });
     wheelBack.setDynamic();
@@ -84,7 +101,7 @@ export default class DemoSandbox extends Phaser.Scene {
       "demo_sandbox_circle"
     );
     wheelFront.setCircle({
-      density: 1.0,
+      density: 0.2,
       friction: 0.9,
     });
     wheelFront.setDynamic();
@@ -94,7 +111,7 @@ export default class DemoSandbox extends Phaser.Scene {
     this.springBack = this.planck.add.wheelJoint(
       car,
       wheelBack,
-      wheelBack.getBodyPosition(),
+      wheelBack.getBodyWorldCenter(),
       { x: 0, y: 1.0 },
       {
         // collideConnected: true,
@@ -110,7 +127,7 @@ export default class DemoSandbox extends Phaser.Scene {
     this.springFront = this.planck.add.wheelJoint(
       car,
       wheelFront,
-      wheelFront.getBodyPosition(),
+      wheelFront.getBodyWorldCenter(),
       { x: 0, y: 1.0 },
       {
         // collideConnected: true,
@@ -122,16 +139,20 @@ export default class DemoSandbox extends Phaser.Scene {
       }
     );
 
-    createGround(this);
+    const ground = createGround(this);
+
+    this.cameras.main.startFollow(car);
   }
 
   update(): void {
     const joint = this.springBack.joint as WheelJoint;
-    if (this.keyLeft.isDown) {
-      console.log("left");
-      joint.setMotorSpeed(+this.SPEED);
+    if (this.keyRight.isDown && this.keyLeft.isDown) {
+      joint.setMotorSpeed(0);
       joint.enableMotor(true);
     } else if (this.keyRight.isDown) {
+      joint.setMotorSpeed(+this.SPEED);
+      joint.enableMotor(true);
+    } else if (this.keyLeft.isDown) {
       console.log("right");
       joint.setMotorSpeed(-this.SPEED);
       joint.enableMotor(true);

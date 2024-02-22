@@ -37,7 +37,7 @@ export function createRamps(scene: Phaser.Scene) {
 }
 
 export function createGround(scene: Phaser.Scene) {
-  const x2 = scene.game.canvas.width;
+  const x2 = scene.game.canvas.width * 4;
   const y = scene.game.canvas.height - 100;
   return createEdge(scene, 0, y, x2, y, {
     friction: 0.6,

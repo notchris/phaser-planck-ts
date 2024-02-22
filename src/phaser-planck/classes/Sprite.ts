@@ -10,6 +10,7 @@ import {
   Contact,
   Chain,
   ChainShape,
+  EdgeShape,
 } from "planck";
 
 export interface PhaserPlanckSpriteOptions {
@@ -267,6 +268,11 @@ export default class PhaserPlanckSprite extends Phaser.GameObjects.Sprite {
 
   setBodyPosition(x: number, y: number) {
     if (!this.planckBody) return;
+    // const fixture = this.planckBody.getFixtureList();
+    // // if (fixture?.getShape().getType() === "edge") {
+    // //   const shape = fixture?.getShape() as EdgeShape
+    // //   shape._set(Vec2(), )
+    // // }
     this.planckBody.setTransform(
       Vec2(
         x / this.scene.planck.config.scaleFactor,
