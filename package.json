@@ -1,5 +1,5 @@
 {
-  "name": "phaser-planck",
+  "name": "phaser-planck-ts",
   "author": "notchris<mail@chrismcgrane.com>",
   "description": "Implement planck.js physics in Phaser3",
   "keywords": [
