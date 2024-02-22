@@ -1,7 +1,17 @@
 {
   "name": "phaser-planck",
   "author": "notchris<mail@chrismcgrane.com>",
-  "private": true,
+  "description": "Implement planck.js physics in Phaser3",
+  "keywords": [
+    "planck.js",
+    "physics",
+    "typescript",
+    "phaser"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/notchris/phaser-planck.git"
+  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -10,11 +20,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "lil-gui": "^0.19.1",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "lil-gui": "^0.19.1",
     "phaser": "^3.60.0",
     "planck": "^1.0.0-beta.16"
   }
